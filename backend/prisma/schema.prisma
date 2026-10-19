@@ -1,40 +1,37 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env(DATABASE_URL)
 }
 
-
 model Jogador {
-  id           Int       @id @default(autoincrement())
-  nome         String    @db.VarChar(100)
-  posicao      String    @db.VarChar(3)
-  agilidade    Int
-  idade        Int
-  valorBase    Decimal   @map("valor_base") @db.Decimal(6, 2)
-  condicao     String    @default("APTO") @db.VarChar(20)
-  clubeId      Int?      @map("clube_id")
+  id        Int     @id @default(autoincrement())
+  nome      String  @db.VarChar(100)
+  posicao   String  @db.VarChar(3)
+  agilidade Int
+  idade     Int
+  valorBase Decimal @map("valor_base") @db.Decimal(6, 2)
+  condicao  String  @default("APTO") @db.VarChar(20)
+  clubeId   Int?    @map("clube_id")
 
-  velocidade   Int
-  finalizacao  Int
-  passe        Int
-  drible       Int
-  defesa       Int
-  fisico       Int
-  potencial    Int
+  velocidade  Int
+  finalizacao Int
+  passe       Int
+  drible      Int
+  defesa      Int
+  fisico      Int
+  potencial   Int
 
   excluidoEm   DateTime? @map("excluido_em") @db.Timestamp(6)
   criadoEm     DateTime  @default(now()) @map("criado_em") @db.Timestamp(6)
   atualizadoEm DateTime  @updatedAt @map("atualizado_em") @db.Timestamp(6)
 
-  clube        Clube?       @relation(fields: [clubeId], references: [id], onDelete: Restrict)
-  contratos    Contrato[]
-  transacoes   Transacao[]
-  escalacao    Escalacao?
+  clube              Clube?         @relation(fields: [clubeId], references: [id], onDelete: Restrict)
+  contratos          Contrato[]
+  transacoes         Transacao[]
+  escalacao          Escalacao?
   duelosComoAtacante DueloPartida[] @relation("AtacanteDuelo")
   duelosComoDefensor DueloPartida[] @relation("DefensorDuelo")
 
@@ -44,33 +41,33 @@ model Jogador {
 }
 
 model Clube {
-  id        Int      @id @default(autoincrement())
-  nome      String   @unique @db.VarChar(60)
-  sigla     String   @unique @db.Char(3)
-  caixa     Decimal  @default(300.00) @db.Decimal(10, 2)
-  formacao  String?  @db.VarChar(5)
-  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamp(6)
+  id       Int      @id @default(autoincrement())
+  nome     String   @unique @db.VarChar(60)
+  sigla    String   @unique @db.Char(3)
+  caixa    Decimal  @default(300.00) @db.Decimal(10, 2)
+  formacao String?  @db.VarChar(5)
+  criadoEm DateTime @default(now()) @map("criado_em") @db.Timestamp(6)
 
   jogadores          Jogador[]
   contratos          Contrato[]
   transacoes         Transacao[]
   escalacoes         Escalacao[]
-  partidasMandante   Partida[] @relation("Mandante")
-  partidasVisitante  Partida[] @relation("Visitante")
+  partidasMandante   Partida[]      @relation("Mandante")
+  partidasVisitante  Partida[]      @relation("Visitante")
   duelosComoAtacante DueloPartida[]
 
   @@map("clubes")
 }
 
 model Contrato {
-  id          Int       @id @default(autoincrement())
-  jogadorId   Int       @map("jogador_id")
-  clubeId     Int       @map("clube_id")
-  valorCompra Decimal   @map("valor_compra") @db.Decimal(6, 2)
-  fidelidadeAte DateTime @map("fidelidade_ate") @db.Timestamp(6)
-  situacao    String    @default("ATIVO") @db.VarChar(12)
-  iniciadoEm  DateTime  @default(now()) @map("iniciado_em") @db.Timestamp(6)
-  encerradoEm DateTime? @map("encerrado_em") @db.Timestamp(6)
+  id            Int       @id @default(autoincrement())
+  jogadorId     Int       @map("jogador_id")
+  clubeId       Int       @map("clube_id")
+  valorCompra   Decimal   @map("valor_compra") @db.Decimal(6, 2)
+  fidelidadeAte DateTime  @map("fidelidade_ate") @db.Timestamp(6)
+  situacao      String    @default("ATIVO") @db.VarChar(12)
+  iniciadoEm    DateTime  @default(now()) @map("iniciado_em") @db.Timestamp(6)
+  encerradoEm   DateTime? @map("encerrado_em") @db.Timestamp(6)
 
   jogador Jogador @relation(fields: [jogadorId], references: [id], onDelete: Restrict)
   clube   Clube   @relation(fields: [clubeId], references: [id], onDelete: Restrict)
@@ -103,9 +100,9 @@ model Transacao {
 }
 
 model Escalacao {
-  clubeId  Int      @map("clube_id")
-  jogadorId Int     @unique @map("jogador_id")
-  criadoEm DateTime @default(now()) @map("criado_em") @db.Timestamp(6)
+  clubeId   Int      @map("clube_id")
+  jogadorId Int      @unique @map("jogador_id")
+  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamp(6)
 
   clube   Clube   @relation(fields: [clubeId], references: [id], onDelete: Restrict)
   jogador Jogador @relation(fields: [jogadorId], references: [id], onDelete: Restrict)
@@ -115,17 +112,17 @@ model Escalacao {
 }
 
 model Partida {
-  id                 Int      @id @default(autoincrement())
-  mandanteId         Int      @map("mandante_id")
-  visitanteId        Int      @map("visitante_id")
-  golsMandante       Int      @map("gols_mandante")
-  golsVisitante      Int      @map("gols_visitante")
-  formacaoMandante   String   @map("formacao_mandante") @db.VarChar(5)
-  formacaoVisitante  String   @map("formacao_visitante") @db.VarChar(5)
-  jogadaEm           DateTime @default(now()) @map("jogada_em") @db.Timestamp(6)
+  id                Int      @id @default(autoincrement())
+  mandanteId        Int      @map("mandante_id")
+  visitanteId       Int      @map("visitante_id")
+  golsMandante      Int      @map("gols_mandante")
+  golsVisitante     Int      @map("gols_visitante")
+  formacaoMandante  String   @map("formacao_mandante") @db.VarChar(5)
+  formacaoVisitante String   @map("formacao_visitante") @db.VarChar(5)
+  jogadaEm          DateTime @default(now()) @map("jogada_em") @db.Timestamp(6)
 
-  mandante  Clube @relation("Mandante", fields: [mandanteId], references: [id], onDelete: Restrict)
-  visitante Clube @relation("Visitante", fields: [visitanteId], references: [id], onDelete: Restrict)
+  mandante  Clube          @relation("Mandante", fields: [mandanteId], references: [id], onDelete: Restrict)
+  visitante Clube          @relation("Visitante", fields: [visitanteId], references: [id], onDelete: Restrict)
   duelos    DueloPartida[]
 
   @@index([jogadaEm])
@@ -135,30 +132,30 @@ model Partida {
 }
 
 model DueloPartida {
-  id                Int      @id @default(autoincrement())
-  partidaId         Int      @map("partida_id")
-  ordem             Int
-  clubeAtacanteId   Int      @map("clube_atacante_id")
-  atacanteId        Int      @map("atacante_id")
-  defensorId        Int      @map("defensor_id")
+  id              Int @id @default(autoincrement())
+  partidaId       Int @map("partida_id")
+  ordem           Int
+  clubeAtacanteId Int @map("clube_atacante_id")
+  atacanteId      Int @map("atacante_id")
+  defensorId      Int @map("defensor_id")
 
-  nomeAtacante      String   @map("nome_atacante") @db.VarChar(100)
-  nomeDefensor      String   @map("nome_defensor") @db.VarChar(100)
-  posicaoAtacante   String   @map("posicao_atacante") @db.VarChar(3)
-  posicaoDefensor   String   @map("posicao_defensor") @db.VarChar(3)
-  condicaoAtacante  String   @map("condicao_atacante") @db.VarChar(20)
-  condicaoDefensor  String   @map("condicao_defensor") @db.VarChar(20)
+  nomeAtacante     String @map("nome_atacante") @db.VarChar(100)
+  nomeDefensor     String @map("nome_defensor") @db.VarChar(100)
+  posicaoAtacante  String @map("posicao_atacante") @db.VarChar(3)
+  posicaoDefensor  String @map("posicao_defensor") @db.VarChar(3)
+  condicaoAtacante String @map("condicao_atacante") @db.VarChar(20)
+  condicaoDefensor String @map("condicao_defensor") @db.VarChar(20)
 
-  atributoAtaque    String   @map("atributo_ataque") @db.VarChar(10)
-  atributoDefesa    String   @map("atributo_defesa") @db.VarChar(10)
-  valorAtaque       Int      @map("valor_ataque")
-  valorDefesa       Int      @map("valor_defesa")
-  gol               Boolean  @default(false)
+  atributoAtaque String  @map("atributo_ataque") @db.VarChar(10)
+  atributoDefesa String  @map("atributo_defesa") @db.VarChar(10)
+  valorAtaque    Int     @map("valor_ataque")
+  valorDefesa    Int     @map("valor_defesa")
+  gol            Boolean @default(false)
 
-  partida        Partida @relation(fields: [partidaId], references: [id], onDelete: Restrict)
-  clubeAtacante  Clube   @relation(fields: [clubeAtacanteId], references: [id], onDelete: Restrict)
-  atacante       Jogador @relation("AtacanteDuelo", fields: [atacanteId], references: [id], onDelete: Restrict)
-  defensor       Jogador @relation("DefensorDuelo", fields: [defensorId], references: [id], onDelete: Restrict)
+  partida       Partida @relation(fields: [partidaId], references: [id], onDelete: Restrict)
+  clubeAtacante Clube   @relation(fields: [clubeAtacanteId], references: [id], onDelete: Restrict)
+  atacante      Jogador @relation("AtacanteDuelo", fields: [atacanteId], references: [id], onDelete: Restrict)
+  defensor      Jogador @relation("DefensorDuelo", fields: [defensorId], references: [id], onDelete: Restrict)
 
   @@unique([partidaId, ordem])
   @@map("duelos_partida")
