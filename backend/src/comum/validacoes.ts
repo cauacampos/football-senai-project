@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsInt, Max, Min, ValidationArguments, registerDecorator } from 'class-validator';
+import { ValidationArguments, registerDecorator } from 'class-validator';
 
 export function contarPalavras(texto: string): number {
   return texto.split(' ').filter((parte) => /\p{L}/u.test(parte)).length;
@@ -12,12 +12,16 @@ export function NormalizarTexto(): PropertyDecorator {
 }
 
 export function InteiroEntre(minimo: number, maximo: number) {
-  const mensagem = `$property deve ser um número inteiro de ${minimo} a ${maximo}`;
-  return (alvo: object, propriedade: string): void => {
-    IsInt({ message: mensagem })(alvo, propriedade);
-    Min(minimo, { message: mensagem })(alvo, propriedade);
-    Max(maximo, { message: mensagem })(alvo, propriedade);
-  };
+  return (alvo: object, propriedade: string): void =>
+    registerDecorator({
+      name: 'inteiroEntre',
+      target: alvo.constructor,
+      propertyName: propriedade,
+      options: { message: `$property deve ser um número inteiro de ${minimo} a ${maximo}` },
+      validator: {
+        validate: (valor: unknown) => typeof valor === 'number' && Number.isInteger(valor) && valor >= minimo && valor <= maximo,
+      },
+    });
 }
 
 export function QuantidadeDePalavras(minimo: number, maximo: number, mensagem: string) {

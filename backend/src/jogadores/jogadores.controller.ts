@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { JogadoresService } from './jogadores.service';
-import { CreateJogadoresDto } from './dto/create-jogadores.dto';
+import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Put, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import { PREFIXO_DA_API } from '../comum/constants';
+import { IdDaUrl } from '../comum/id-da-url.decorator';
+import { UpdateCondicaoDto } from './dto/update-condicao.dto';
 import { UpdateJogadoresDto } from './dto/update-jogadores.dto';
+import { CreateJogadoresDto } from './dto/create-jogadores.dto';
+import { JogadorResposta } from './jogadores-resposta';
+import { JogadoresService } from './jogadores.service';
 
-@Controller('jogadores')
+@Controller('players')
 export class JogadoresController {
   constructor(private readonly jogadoresService: JogadoresService) {}
 
   @Post()
-  create(@Body() createJogadoresDto: CreateJogadoresDto) {
-    return this.jogadoresService.createJogador(createJogadoresDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.jogadoresService.getJogadores();
+  async cadastrar(
+    @Body() dto: CreateJogadoresDto,
+    @Res({ passthrough: true }) resposta: Response,
+  ): Promise<JogadorResposta> {
+    const jogador = await this.jogadoresService.cadastrar(dto);
+    resposta.location(`/${PREFIXO_DA_API}/players/${jogador.id}`);
+    return jogador;
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.jogadoresService.getJogadorById(id);
+  buscarPorId(@IdDaUrl() id: number): Promise<JogadorResposta> {
+    return this.jogadoresService.buscarPorId(id);
   }
 
-  @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateJogadoresDto: UpdateJogadoresDto) {
-    return this.jogadoresService.patchJogador(id, updateJogadoresDto);
+  @Put(':id')
+  editar(@IdDaUrl() id: number, @Body() dto: UpdateJogadoresDto): Promise<JogadorResposta> {
+    return this.jogadoresService.editar(id, dto);
+  }
+
+  @Patch(':id/condition')
+  alterarCondicao(@IdDaUrl() id: number, @Body() dto: UpdateCondicaoDto): Promise<JogadorResposta> {
+    return this.jogadoresService.alterarCondicao(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.jogadoresService.deleteJogador(id);
+  @HttpCode(204)
+  excluir(@IdDaUrl() id: number): Promise<void> {
+    return this.jogadoresService.excluir(id);
   }
 }

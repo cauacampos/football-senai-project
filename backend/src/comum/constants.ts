@@ -1,0 +1,1 @@
+export const PREFIXO_DA_API = 'api/v1';

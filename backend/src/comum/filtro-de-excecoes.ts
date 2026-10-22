@@ -10,7 +10,7 @@ function extrairMensagem(excecao: HttpException): string {
   }
   const mensagem = (resposta as { message?: string | string[] }).message;
   if (Array.isArray(mensagem)) {
-    return mensagem.join('; ');
+    return [...new Set(mensagem)].join('; ');
   }
   return mensagem ?? excecao.message;
 }
