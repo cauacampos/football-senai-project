@@ -62,9 +62,12 @@ export default function Home() {
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [mostrarCadastro, setMostrarCadastro] = useState(false);
+  const [mostrarCadastroClube, setMostrarCadastroClube] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [salvandoClube, setSalvandoClube] = useState(false);
 
   const carregar = useCallback(async () => {
+    setCarregando(true);
     setErro("");
     try {
       const query = new URLSearchParams({ page: String(pagina), limit: "10", sort: "name" });
@@ -82,56 +85,37 @@ export default function Home() {
     }
   }, [busca, pagina]);
 
-  useEffect(() => {
-  let cancelado = false;
-
-  async function carregarDados() {
-    setErro("");
-
-    try {
-      const query = new URLSearchParams({
-        page: String(pagina),
-        limit: "10",
-        sort: "name",
-      });
-
-      if (busca.trim().length >= 2) {
-        query.set("search", busca.trim());
-      }
-
-      const [listaJogadores, listaClubes] = await Promise.all([
-        requisicao<PaginaJogadores>(`/players?${query.toString()}`),
-        requisicao<Clube[]>("/clubs?sort=name"),
-      ]);
-
-      if (!cancelado) {
-        setJogadores(listaJogadores);
-        setClubes(listaClubes);
-      }
-    } catch (e) {
-      if (!cancelado) {
-        setErro(
-          e instanceof Error
-            ? e.message
-            : "Não foi possível carregar os dados.",
-        );
-      }
-    } finally {
-      if (!cancelado) {
-        setCarregando(false);
-      }
-    }
-  }
-
-  void carregarDados();
-
-  return () => {
-    cancelado = true;
-  };
-}, [busca, pagina]);
+  useEffect(() => { void carregar(); }, [carregar]);
 
   const totalJogadores = jogadores?.meta.total_items ?? 0;
   const valorElencos = useMemo(() => clubes.reduce((soma, clube) => soma + clube.squad_value, 0), [clubes]);
+
+  async function cadastrarClube(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    const formulario = new FormData(evento.currentTarget);
+    const dados = {
+      name: String(formulario.get("name") || "").trim().replace(/\s+/g, " "),
+      acronym: String(formulario.get("acronym") || "").trim().toUpperCase(),
+    };
+
+    setSalvandoClube(true);
+    setErro("");
+    setMensagem("");
+    try {
+      await requisicao<Clube>("/clubs", {
+        method: "POST",
+        body: JSON.stringify(dados),
+      });
+      const listaClubes = await requisicao<Clube[]>("/clubs?sort=name");
+      setClubes(listaClubes);
+      setMostrarCadastroClube(false);
+      setMensagem(`Clube ${dados.name} cadastrado com sucesso.`);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não foi possível cadastrar o clube.");
+    } finally {
+      setSalvandoClube(false);
+    }
+  }
 
   async function cadastrarJogador(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -215,7 +199,22 @@ export default function Home() {
             <div className="flex items-center justify-between border-t border-slate-800 px-4 py-4 text-sm text-slate-400 sm:px-5"><span>{jogadores?.meta.total_items ?? 0} resultado(s) · página {jogadores?.meta.page ?? pagina} de {Math.max(1, jogadores?.meta.total_pages ?? 1)}</span><div className="flex gap-2"><button disabled={pagina <= 1 || carregando} onClick={() => setPagina((p) => Math.max(1, p - 1))} className="rounded-lg border border-slate-700 px-3 py-1.5 disabled:opacity-40">Anterior</button><button disabled={pagina >= (jogadores?.meta.total_pages ?? 1) || carregando} onClick={() => setPagina((p) => p + 1)} className="rounded-lg border border-slate-700 px-3 py-1.5 disabled:opacity-40">Próxima</button></div></div>
           </section>
         ) : (
-          <section><div className="mb-4"><h2 className="text-xl font-bold">Clubes da liga</h2><p className="mt-1 text-sm text-slate-400">Caixa, valor de elenco e patrimônio calculados pelo backend.</p></div>
+          <section>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div><h2 className="text-xl font-bold">Clubes da liga</h2><p className="mt-1 text-sm text-slate-400">Caixa, valor de elenco e patrimônio calculados pelo backend.</p><p className="mt-1 text-xs text-slate-500">{clubes.length}/20 clubes cadastrados</p></div>
+              <button
+                type="button"
+                onClick={() => { setMostrarCadastroClube((aberto) => !aberto); setErro(""); setMensagem(""); }}
+                disabled={clubes.length >= 20 && !mostrarCadastroClube}
+                className="rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >{mostrarCadastroClube ? "Fechar formulário" : "+ Novo clube"}</button>
+            </div>
+            {mostrarCadastroClube && <form onSubmit={cadastrarClube} className="mb-5 grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 sm:grid-cols-2 sm:p-5">
+              <label className="flex flex-col gap-1 text-xs font-medium text-slate-400">Nome do clube<input name="name" type="text" required minLength={3} maxLength={60} pattern="[A-Za-zÀ-ÿ .-]+( [A-Za-zÀ-ÿ .-]+)*" placeholder="Ex.: Águias FC" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-400" /></label>
+              <label className="flex flex-col gap-1 text-xs font-medium text-slate-400">Sigla (3 letras)<input name="acronym" type="text" required minLength={3} maxLength={3} pattern="[A-Z]{3}" title="Informe exatamente três letras maiúsculas, por exemplo AGU." placeholder="Ex.: AGU" onChange={(e) => { e.currentTarget.value = e.currentTarget.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3); }} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm uppercase text-white outline-none focus:border-emerald-400" /></label>
+              <div className="flex items-end"><button disabled={salvandoClube || clubes.length >= 20} className="w-full rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 disabled:opacity-50">{salvandoClube ? "Salvando…" : "Cadastrar clube"}</button></div>
+              <p className="text-xs text-slate-500 sm:col-span-2">O nome deve ter de 2 a 5 palavras. A sigla deve ter três letras distintas, começar pela inicial do nome e seguir letras que apareçam no nome na mesma ordem. O clube começa com caixa de R$ 300,00 e elenco vazio.</p>
+            </form>}
             {carregando ? <p className="py-10 text-center text-slate-400">Carregando clubes…</p> : <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{clubes.map((clube) => <article key={clube.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-widest text-emerald-400">{clube.acronym}</p><h3 className="mt-2 text-lg font-bold">{clube.name}</h3></div><span className="rounded-xl bg-slate-800 px-3 py-2 text-sm font-bold">#{clube.id}</span></div><div className="mt-5 grid grid-cols-2 gap-3"><MiniMetrica titulo="Caixa" valor={moeda(clube.cash)} /><MiniMetrica titulo="Valor do elenco" valor={moeda(clube.squad_value)} /><div className="col-span-2 rounded-xl bg-emerald-950/50 p-3"><p className="text-xs text-emerald-300">Patrimônio</p><p className="mt-1 text-xl font-black text-emerald-200">{moeda(clube.net_worth)}</p></div></div></article>)}</div>}
             {!carregando && clubes.length === 0 && <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-slate-400">Nenhum clube cadastrado.</div>}
           </section>
