@@ -129,43 +129,43 @@ describe('JogadoresService', () => {
     });
   });
 
-  describe('alterarCondicao', () => {
+  describe('updateCondicao', () => {
     it('muda a condição e recalcula o valor de mercado', async () => {
       const { servico } = criarPrismaFalso(meiaLua);
-      const resposta = await servico.alterarCondicao(2, { condition: 'MAL_CONDICIONADO' });
+      const resposta = await servico.updateCondicao(2, { condition: 'MAL_CONDICIONADO' });
       expect(resposta.condition).toBe('MAL_CONDICIONADO');
       expect(resposta.market_value).toBe(37);
     });
 
     it('aceita a condição atual sem gravar nada', async () => {
       const { servico, registro } = criarPrismaFalso(meiaLua);
-      await servico.alterarCondicao(2, { condition: 'APTO' });
+      await servico.updateCondicao(2, { condition: 'APTO' });
       expect(registro.gravacoes).toHaveLength(0);
     });
 
     it('recusa DOENTE direto para APTO', async () => {
       const { servico, registro } = criarPrismaFalso({ ...meiaLua, condicao: 'DOENTE' });
-      await expect(servico.alterarCondicao(2, { condition: 'APTO' })).rejects.toBeInstanceOf(ConflictException);
+      await expect(servico.updateCondicao(2, { condition: 'APTO' })).rejects.toBeInstanceOf(ConflictException);
       expect(registro.gravacoes).toHaveLength(0);
     });
 
     it('permite DOENTE para MAL_CONDICIONADO', async () => {
       const { servico } = criarPrismaFalso({ ...meiaLua, condicao: 'DOENTE' });
-      await expect(servico.alterarCondicao(2, { condition: 'MAL_CONDICIONADO' })).resolves.toMatchObject({
+      await expect(servico.updateCondicao(2, { condition: 'MAL_CONDICIONADO' })).resolves.toMatchObject({
         condition: 'MAL_CONDICIONADO',
       });
     });
 
     it('tira o jogador da escalação ao ficar DOENTE, na mesma operação', async () => {
       const { servico, registro } = criarPrismaFalso(meiaLua);
-      await servico.alterarCondicao(2, { condition: 'DOENTE' });
+      await servico.updateCondicao(2, { condition: 'DOENTE' });
       expect(registro.escalacoesRemovidas).toEqual([{ where: { jogadorId: 2 } }]);
       expect(registro.gravacoes).toEqual([{ condicao: 'DOENTE' }]);
     });
 
     it('não mexe na escalação quando a nova condição não é DOENTE', async () => {
       const { servico, registro } = criarPrismaFalso(meiaLua);
-      await servico.alterarCondicao(2, { condition: 'MAL_CONDICIONADO' });
+      await servico.updateCondicao(2, { condition: 'MAL_CONDICIONADO' });
       expect(registro.escalacoesRemovidas).toHaveLength(0);
     });
   });
