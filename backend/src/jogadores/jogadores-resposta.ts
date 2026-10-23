@@ -1,7 +1,7 @@
 import type { Jogador } from '@prisma/client';
 import { centavosParaMoeda, decimalParaCentavos } from '../comum/moeda';
 import { calcularOverall, calcularValorDeMercado } from './calculo-jogador';
-import type { Condicao, Posicao } from './tipos-jogador';
+import type { Condicao, Posicao } from '../comum/tipos-jogador';
 
 export interface JogadorResposta {
   id: number;

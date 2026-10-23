@@ -1,5 +1,5 @@
 import { Atributos, calcularOverall, calcularValorBase, calcularValorDeMercado } from './calculo-jogador';
-import type { Condicao, Posicao } from './tipos-jogador';
+import type { Condicao, Posicao } from '../comum/tipos-jogador';
 
 describe('calcularOverall', () => {
   const casos: Array<[Posicao, Atributos, number]> = [

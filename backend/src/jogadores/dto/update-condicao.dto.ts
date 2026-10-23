@@ -1,6 +1,6 @@
 import { IsIn } from 'class-validator';
-import { CONDICOES } from '../tipos-jogador';
-import type { Condicao } from '../tipos-jogador';
+import { CONDICOES } from '../../comum/tipos-jogador';
+import type { Condicao } from '../../comum/tipos-jogador';
 
 export class UpdateCondicaoDto {
   @IsIn(CONDICOES, { message: 'condition deve ser APTO, MAL_CONDICIONADO ou DOENTE' })

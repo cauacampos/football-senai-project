@@ -1,4 +1,4 @@
-import type { Condicao, Posicao } from './tipos-jogador';
+import type { Condicao, Posicao } from '../comum/tipos-jogador';
 
 export interface Atributos {
   velocidade: number;
@@ -23,20 +23,20 @@ const PESOS_POR_POSICAO: Record<Posicao, Atributos> = {
   ATA: { velocidade: 20, finalizacao: 40, passe: 10, drible: 20, defesa: 0, fisico: 10 },
 };
 
-const DESCONTO_POR_CONDICAO: Record<Condicao, number> = {
+export const DESCONTO_POR_CONDICAO: Record<Condicao, number> = {
   APTO: 0,
   MAL_CONDICIONADO: 1500,
   DOENTE: 3000,
 };
 
-const AGILIDADE_MINIMA_PARA_METADE_DO_DESCONTO = 80;
-const AGILIDADE_MAXIMA_PARA_DESCONTO_EXTRA = 30;
-const DESCONTO_EXTRA_AGILIDADE_BAIXA = 1000;
-const IDADE_MAXIMA_JOVEM_PROMESSA = 21;
-const IDADE_MINIMA_VETERANO = 32;
-const AJUSTE_POR_IDADE = 1000;
-const TETO_DO_DESCONTO = -4000;
-const PISO_DO_VALOR_EM_CENTAVOS = 100;
+export const AGILIDADE_MINIMA_PARA_METADE_DO_DESCONTO = 80;
+export const AGILIDADE_MAXIMA_PARA_DESCONTO_EXTRA = 30;
+export const DESCONTO_EXTRA_AGILIDADE_BAIXA = 1000;
+export const IDADE_MAXIMA_JOVEM_PROMESSA = 21;
+export const IDADE_MINIMA_VETERANO = 32;
+export const AJUSTE_POR_IDADE = 1000;
+export const TETO_DO_DESCONTO = -4000;
+export const PISO_DO_VALOR_EM_CENTAVOS = 100;
 
 const CENTAVOS_POR_PONTO_FAIXA_1 = 50;
 const CENTAVOS_POR_PONTO_FAIXA_2 = 200;

@@ -1,7 +1,7 @@
 import { IsIn, IsString, Matches } from 'class-validator';
 import { InteiroEntre, NormalizarTexto, QuantidadeDePalavras, ValidarNoObjeto } from '../../comum/validacoes';
-import { POSICOES } from '../tipos-jogador';
-import type { Posicao } from '../tipos-jogador';
+import { POSICOES } from '../../comum/tipos-jogador';
+import type { Posicao } from '../../comum/tipos-jogador';
 
 const ATRIBUTOS = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'] as const;
 const SOMA_MAXIMA_DOS_ATRIBUTOS = 480;

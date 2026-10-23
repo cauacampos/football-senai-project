@@ -54,3 +54,37 @@ export function ValidarNoObjeto<T extends object>(
       },
     });
 }
+
+const FORMATO_INTEIRO_POSITIVO = /^[1-9]\d*$/;
+const FORMATO_DECIMAL = /^(0|[1-9]\d*)(\.\d{1,2})?$/;
+
+export function InteiroEmTexto(minimo: number, maximo: number) {
+  return (alvo: object, propriedade: string): void =>
+    registerDecorator({
+      name: 'inteiroEmTexto',
+      target: alvo.constructor,
+      propertyName: propriedade,
+      options: { message: `$property deve ser um número inteiro de ${minimo} a ${maximo}, escrito só com dígitos` },
+      validator: {
+        validate: (valor: unknown) =>
+          typeof valor === 'string' &&
+          FORMATO_INTEIRO_POSITIVO.test(valor) &&
+          Number(valor) >= minimo &&
+          Number(valor) <= maximo,
+      },
+    });
+}
+
+export function DecimalEmTexto(minimo: number, maximo: number) {
+  return (alvo: object, propriedade: string): void =>
+    registerDecorator({
+      name: 'decimalEmTexto',
+      target: alvo.constructor,
+      propertyName: propriedade,
+      options: { message: `$property deve ser um decimal de ${minimo} a ${maximo}, com até 2 casas, como 10 ou 10.55` },
+      validator: {
+        validate: (valor: unknown) =>
+          typeof valor === 'string' && FORMATO_DECIMAL.test(valor) && Number(valor) >= minimo && Number(valor) <= maximo,
+      },
+    });
+}
