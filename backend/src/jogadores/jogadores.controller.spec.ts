@@ -5,10 +5,24 @@ import { JogadoresService } from './jogadores.service';
 describe('JogadoresController', () => {
   let controller: JogadoresController;
 
+  const jogadoresServiceMock = {
+    cadastrar: jest.fn(),
+    listar: jest.fn(),
+    buscarPorId: jest.fn(),
+    editar: jest.fn(),
+    alterarCondicao: jest.fn(),
+    excluir: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [JogadoresController],
-      providers: [JogadoresService],
+      providers: [
+        {
+          provide: JogadoresService,
+          useValue: jogadoresServiceMock,
+        },
+      ],
     }).compile();
 
     controller = module.get<JogadoresController>(JogadoresController);

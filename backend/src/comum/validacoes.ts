@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { ValidationArguments, registerDecorator } from 'class-validator';
+import { lerDataDeBrasilia } from './data-hora';
 
 export function contarPalavras(texto: string): number {
   return texto.split(' ').filter((parte) => /\p{L}/u.test(parte)).length;
@@ -86,5 +87,16 @@ export function DecimalEmTexto(minimo: number, maximo: number) {
         validate: (valor: unknown) =>
           typeof valor === 'string' && FORMATO_DECIMAL.test(valor) && Number(valor) >= minimo && Number(valor) <= maximo,
       },
+    });
+}
+
+export function DataDeBrasilia() {
+  return (alvo: object, propriedade: string): void =>
+    registerDecorator({
+      name: 'dataDeBrasilia',
+      target: alvo.constructor,
+      propertyName: propriedade,
+      options: { message: '$property deve estar no formato AAAA-MM-DDTHH:MM-03:00 e ser uma data e hora que existe' },
+      validator: { validate: (valor: unknown) => typeof valor === 'string' && lerDataDeBrasilia(valor) !== null },
     });
 }

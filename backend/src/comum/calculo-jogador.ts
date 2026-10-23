@@ -1,3 +1,4 @@
+import { dividirArredondando } from '../comum/arredondamento';
 import type { Condicao, Posicao } from './tipos-jogador';
 
 export interface Atributos {
@@ -23,6 +24,8 @@ const PESOS_POR_POSICAO: Record<Posicao, Atributos> = {
   ATA: { velocidade: 20, finalizacao: 40, passe: 10, drible: 20, defesa: 0, fisico: 10 },
 };
 
+// Percentuais em pontos-base (1% = 100) e valores em moeda em centavos,
+// para que todo o cálculo seja feito com inteiros, sem erro de ponto flutuante.
 export const DESCONTO_POR_CONDICAO: Record<Condicao, number> = {
   APTO: 0,
   MAL_CONDICIONADO: 1500,
@@ -47,10 +50,6 @@ const OVERALL_INICIO_FAIXA_3 = 75;
 const PONTOS_FAIXA_1 = 20;
 const PONTOS_FAIXA_2 = 15;
 const PONTOS_FAIXA_3 = 24;
-
-function dividirArredondando(numerador: number, denominador: number): number {
-  return Math.floor((numerador * 2 + denominador) / (denominador * 2));
-}
 
 function limitar(valor: number, minimo: number, maximo: number): number {
   return Math.min(Math.max(valor, minimo), maximo);
